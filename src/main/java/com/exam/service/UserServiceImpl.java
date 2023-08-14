@@ -19,6 +19,7 @@ public class UserServiceImpl implements UserService {
 	public User register(User u) throws Exception {
 		User local = this.userRepo.findByUserName(u.getUserName());
 		if (local != null) {
+			
 			System.out.println("User already exist!!");
 			throw new Exception("User already exist!!");
 		} else {
