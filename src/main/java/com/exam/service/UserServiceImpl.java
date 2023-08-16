@@ -1,57 +1,75 @@
 package com.exam.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import com.exam.dao.BaseDao;
+import com.exam.dao.UserDao;
 import com.exam.domain.User;
-import com.exam.repo.UserRepository;
+import com.exam.rm.UserRowMapper;
+
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends BaseDao implements UserService  {
 
 	@Autowired
-	private UserRepository userRepo;
-
-	/**
-	 * This method will create new user
-	 */
+    private UserDao userDao;
+	
 	@Override
-	public User register(User u) throws Exception {
-		User local = this.userRepo.findByUserName(u.getUserName());
-		if (local != null) {
+	public User register(User u) {
+		return userDao.save(u);
+	}
+
+	@Override
+	public User login(String user_name, String password) throws Exception {
+		String sql = "SELECT * FROM user WHERE user_name=:un AND password=:pw";
+		try {
+			MapSqlParameterSource ps = new MapSqlParameterSource();
+			ps.addValue("un",user_name);
+			ps.addValue("pw",password);
+			 return npjt.queryForObject(sql, ps,new UserRowMapper() );
+		} catch (EmptyResultDataAccessException e) {
+			e.printStackTrace();
+			throw new Exception("Empty Result Set.");
 			
-			System.out.println("User already exist!!");
-			throw new Exception("User already exist!!");
-		} else {
-			u.setLoginStatus(LOGIN_STATUS_ACTIVE);
-			u.setRole(ROLE_USER);
-			local = this.userRepo.save(u);
 		}
-		return local;
-	}
-
-	/**
-	 * find user by username as a parameter and return user if found
-	 */
-	@Override
-	public User findByUserName(String userName) {
-
-		return this.userRepo.findByUserName(userName);
-	}
-
-	/**
-	 * this method delete one record by its userID
-	 */
-	@Override
-	public void deleteById(Long id) {
-		this.userRepo.deleteById(id);
-
 	}
 
 	@Override
-	public User update(User user) {
-		
-		return this.userRepo.save(user);
+	public void editProfile(User u) {
+		userDao.update(u);
+	}
+
+	@Override
+	public Boolean changeLoginStatus(Integer uId, Integer newStatus) {
+		String sql = "UPDATE user SET loginStatus="+newStatus+" WHERE userId= "+uId;
+		jt.update(sql);
+		return true;
+	}
+
+	@Override
+	public List<User> findAll() {
+		return userDao.findAll();
+	}
+	
+	@Override
+	public Boolean bulkDelete(Integer[] uId) {
+		String ids = StringUtils.arrayToCommaDelimitedString(uId);
+		String sql = "DELETE FROM user WHERE userId IN("+ids+")";
+		jt.update(sql);
+		return true;
+	}
+	
+	@Override
+	public List<User> search(String txt) {
+		String str ="SELECT * FROM user WHERE ( name LIKE '%"+txt+"%' OR phone LIKE '%"+txt+"%'  "
+				+ "OR email LIKE '%"+txt+"%' OR address LIKE '%"+txt+"%' OR loginName LIKE '%"+txt+"%' OR password LIKE '%"+txt+"%' OR role LIKE '%"+txt+"%' OR loginStatus LIKE '%"+txt+"%')";
+		return jt.query(str, new UserRowMapper());
 	}
 
 }

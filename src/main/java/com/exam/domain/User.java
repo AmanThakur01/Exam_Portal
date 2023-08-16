@@ -1,14 +1,9 @@
 package com.exam.domain;
 
-import javax.persistence.*;
-
-@Entity
-@Table(name = "users")
 public class User {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long userId;
+
+	private Integer userId;
 	private String name;
 	private String phone;
 	private String email;
@@ -21,9 +16,9 @@ public class User {
 	public User() {
 	}
 
-	public User(Long userId, String name, String phone, String email, String userName, String password, Integer role,
+	public User(Integer userId, String name, String phone, String email, String userName, String password, Integer role,
 			Integer loginStatus, String profile) {
-		
+
 		this.userId = userId;
 		this.name = name;
 		this.phone = phone;
@@ -43,11 +38,11 @@ public class User {
 		this.profile = profile;
 	}
 
-	public Long getUserId() {
+	public Integer getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
 
